@@ -1,0 +1,44 @@
+{
+    "name": "express-effect-rpc",
+    "private": true,
+    "workspaces": {
+        "packages": [
+            "apps/*",
+            "packages/*"
+        ],
+        "catalog": {
+            "@effect/language-service": "^0.87.2",
+            "@effect/platform-node": "^4.0.0-rc.115",
+            "@effect/tsgo": "0.45.0",
+            "@types/bun": "latest",
+            "@types/express": "^5.0.6",
+            "@types/node": "^26.5.1",
+            "effect": "^4.0.0-beta.107",
+            "express": "^5.2.1",
+            "oxfmt": "0.68.0",
+            "oxlint": "1.82.0",
+            "oxlint-tsgolint": "^7.0.2001",
+            "typescript": "7.0.2"
+        }
+    },
+    "type": "module",
+    "scripts": {
+        "dev": "bun --filter '*' dev",
+        "lint": "oxlint",
+        "lint:fix": "oxlint --fix",
+        "fmt": "oxfmt",
+        "fmt:check": "oxfmt --check",
+        "prepare": "effect-tsgo patch --typescript --oxlint"
+    },
+    "devDependencies": {
+        "@effect/language-service": "^0.87.2",
+        "@effect/tsgo": "catalog:",
+        "@types/bun": "^1.4.2",
+        "oxfmt": "catalog:",
+        "oxlint": "catalog:",
+        "oxlint-tsgolint": "^7.0.2001"
+    },
+    "peerDependencies": {
+        "typescript": "catalog:"
+    }
+}

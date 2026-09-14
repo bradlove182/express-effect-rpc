@@ -1,0 +1,60 @@
+{
+    "$schema": "./node_modules/@effect/tsgo/schema.json",
+    "compilerOptions": {
+        "target": "ESNext",
+        "jsx": "react-jsx",
+        // Environment setup & latest features
+        "lib": ["ESNext"],
+        "moduleDetection": "force",
+        "module": "Preserve",
+
+        // Bundler mode
+        "moduleResolution": "bundler",
+        "types": ["bun"],
+        "allowImportingTsExtensions": true,
+        "allowJs": true,
+
+        // Best practices
+        "strict": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+
+        "noPropertyAccessFromIndexSignature": false,
+        "noUncheckedIndexedAccess": true,
+        // Some stricter flags (disabled by default)
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noEmit": true,
+        "verbatimModuleSyntax": true,
+        "skipLibCheck": true,
+        "plugins": [
+            {
+                "name": "@effect/language-service",
+                "diagnostics": false,
+                "diagnosticSeverity": {
+                    "abortControllerInEffect": "warning",
+                    "asyncFunction": "warning",
+                    "cryptoRandomUUID": "warning",
+                    "cryptoRandomUUIDInEffect": "warning",
+                    "extendsNativeError": "warning",
+                    "globalConsole": "warning",
+                    "globalConsoleInEffect": "warning",
+                    "globalDate": "warning",
+                    "globalDateInEffect": "warning",
+                    "globalFetch": "warning",
+                    "globalFetchInEffect": "warning",
+                    "globalRandom": "warning",
+                    "globalRandomInEffect": "warning",
+                    "globalTimers": "warning",
+                    "globalTimersInEffect": "warning",
+                    "instanceOfSchema": "warning",
+                    "newPromise": "warning",
+                    "nodeBuiltinImport": "warning",
+                    "preferSchemaOverJson": "warning",
+                    "processEnv": "warning",
+                    "processEnvInEffect": "warning"
+                }
+            }
+        ]
+    }
+}

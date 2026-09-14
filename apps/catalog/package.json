@@ -1,0 +1,23 @@
+{
+    "name": "catalog",
+    "private": true,
+    "type": "module",
+    "module": "./src/server/index.ts",
+    "scripts": {
+        "dev": "bun --watch src/server/index.ts"
+    },
+    "dependencies": {
+        "@effect/platform-node": "catalog:",
+        "catalog-core": "workspace:*",
+        "effect": "catalog:",
+        "express": "catalog:"
+    },
+    "devDependencies": {
+        "@types/bun": "catalog:",
+        "@types/express": "catalog:",
+        "@types/node": "catalog:"
+    },
+    "peerDependencies": {
+        "typescript": "catalog:"
+    }
+}

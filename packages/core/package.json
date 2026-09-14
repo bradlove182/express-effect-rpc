@@ -1,0 +1,15 @@
+{
+    "name": "catalog-core",
+    "private": true,
+    "type": "module",
+    "module": "index.ts",
+    "dependencies": {
+        "effect": "catalog:"
+    },
+    "devDependencies": {
+        "@types/bun": "latest"
+    },
+    "peerDependencies": {
+        "typescript": "catalog:"
+    }
+}
