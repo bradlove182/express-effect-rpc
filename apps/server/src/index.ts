@@ -5,9 +5,7 @@ import express from "express"
 // oxlint-disable-next-line effecttsgo/node-builtin-import -- Required for express
 import { createServer, type Server } from "node:http"
 import { CatalogHandlers } from "./handlers"
-import { CatalogRpc } from "catalog-core"
-
-const port = 3000
+import { CatalogRpc, SERVER_PORT } from "catalog-core"
 
 const RpcLive = (server: Server) =>
     RpcServer.layer(CatalogRpc).pipe(
@@ -26,8 +24,8 @@ const main = Effect.gen(function*() {
     yield* Effect.all(
         [
             Layer.launch(RpcLive(server)),
-            Effect.sync(() => server.listen(port)),
-            Effect.log(`Server listening on port ${port}`)
+            Effect.sync(() => server.listen(SERVER_PORT)),
+            Effect.log(`Server listening on port ${SERVER_PORT}`)
         ],
         { concurrency: "unbounded", discard: true }
     )

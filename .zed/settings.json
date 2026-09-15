@@ -21,6 +21,29 @@
         }
     },
     "languages": {
+        "Svelte": {
+            "format_on_save": "on",
+            "prettier": {
+                "allowed": false
+            },
+            "formatter": [
+                {
+                    "language_server": {
+                        "name": "oxfmt"
+                    }
+                }
+            ],
+            "language_servers": [
+                "effect-tsgo",
+                "oxlint",
+                "svelte-language-server",
+                "tailwindcss-language-server",
+                "!vtsls",
+                "!typescript-language-server",
+                "!eslint",
+                "!json-language-server"
+            ]
+        },
         "CSS": {
             "format_on_save": "on",
             "prettier": {

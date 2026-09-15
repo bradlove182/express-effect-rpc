@@ -3,6 +3,12 @@
     "private": true,
     "type": "module",
     "module": "index.ts",
+    "exports": {
+        ".": {
+            "import": "./index.ts",
+            "types": "./index.ts"
+        }
+    },
     "dependencies": {
         "effect": "catalog:"
     },
