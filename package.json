@@ -40,12 +40,13 @@
         "prepare": "effect-tsgo patch --typescript --oxlint"
     },
     "devDependencies": {
-        "@effect/language-service": "^0.87.2",
+        "@effect/language-service": "catalog:",
         "@effect/tsgo": "catalog:",
-        "@types/bun": "^1.4.2",
+        "@types/bun": "catalog:",
         "oxfmt": "catalog:",
         "oxlint": "catalog:",
-        "oxlint-tsgolint": "^7.0.2001"
+        "oxlint-tsgolint": "catalog:",
+        "svelte": "catalog:"
     },
     "peerDependencies": {
         "typescript": "catalog:"

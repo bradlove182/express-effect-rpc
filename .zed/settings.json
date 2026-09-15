@@ -29,7 +29,7 @@
             "formatter": [
                 {
                     "language_server": {
-                        "name": "oxfmt"
+                        "name": "svelte-language-server"
                     }
                 }
             ],
