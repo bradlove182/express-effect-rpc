@@ -4,7 +4,7 @@
     "type": "module",
     "module": "./src/index.ts",
     "scripts": {
-        "dev": "bun --watch src/index.ts"
+        "dev": "tsx watch src/index.ts"
     },
     "dependencies": {
         "@effect/platform-node": "catalog:",
@@ -15,7 +15,8 @@
     "devDependencies": {
         "@types/bun": "catalog:",
         "@types/express": "catalog:",
-        "@types/node": "catalog:"
+        "@types/node": "catalog:",
+        "tsx": "^4.19.2"
     },
     "peerDependencies": {
         "typescript": "catalog:"

@@ -1,21 +1,24 @@
+// oxlint-disable-next-line effecttsgo/node-builtin-import -- Required for express
+import { createServer, type Server } from "node:http"
+
 import { NodeRuntime, NodeSocketServer } from "@effect/platform-node"
+import { CatalogRpc } from "catalog-core"
+import { SERVER_PORT } from "catalog-core/dev"
 import { Effect, Layer } from "effect"
 import { RpcSerialization, RpcServer } from "effect/unstable/rpc"
 import express from "express"
-// oxlint-disable-next-line effecttsgo/node-builtin-import -- Required for express
-import { createServer, type Server } from "node:http"
+
 import { CatalogHandlers } from "./handlers"
-import { CatalogRpc, SERVER_PORT } from "catalog-core"
 
 const RpcLive = (server: Server) =>
     RpcServer.layer(CatalogRpc).pipe(
         Layer.provide(CatalogHandlers),
         Layer.provide(RpcServer.layerProtocolSocketServer),
         Layer.provide(NodeSocketServer.layerWebSocket({ server, path: "/rpc" })),
-        Layer.provide(RpcSerialization.layerNdjson)
+        Layer.provide(RpcSerialization.layerNdjson),
     )
 
-const main = Effect.gen(function*() {
+const main = Effect.gen(function* () {
     const app = express()
     const server = createServer(app)
 
@@ -25,11 +28,16 @@ const main = Effect.gen(function*() {
         [
             Layer.launch(RpcLive(server)),
             Effect.sync(() => server.listen(SERVER_PORT)),
-            Effect.log(`Server listening on port ${SERVER_PORT}`)
+            Effect.log(`Server listening on port ${SERVER_PORT}`),
         ],
-        { concurrency: "unbounded", discard: true }
+        { concurrency: "unbounded", discard: true },
     )
 
+    // Keep the main fiber running so `runMain` never closes the scope that the
+    // launched RPC layer lives in. Without this, the effect returns
+    // immediately, the scope closes, and every WebSocket connection is torn
+    // down right after it opens.
+    return yield* Effect.never
 })
 
 NodeRuntime.runMain(main)
