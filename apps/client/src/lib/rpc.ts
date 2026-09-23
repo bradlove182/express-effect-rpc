@@ -1,12 +1,11 @@
-import { SERVER_PORT } from "catalog-core/dev"
+import { SERVER_PORT } from "../../../../packages/core/src/dev"
 import { Effect, Layer, type Scope } from "effect"
 import { RpcClient, RpcSerialization } from "effect/unstable/rpc"
-import { Socket } from "effect/unstable/socket"
+import { HttpClient, layerMergedContext } from "effect/unstable/http/HttpClient";
 
 // A single-connection protocol. Composed once, provided per program.
-const ProtocolLayer = RpcClient.layerProtocolSocket().pipe(
-    Layer.provide(Socket.layerWebSocket(`ws://localhost:${SERVER_PORT}/rpc`)),
-    Layer.provide(Socket.layerWebSocketConstructorGlobal),
+const ProtocolLayer = RpcClient.layerProtocolHttp({ url: `http://localhost:${SERVER_PORT}/rpc` }).pipe(
+    Layer.provide(layerMergedContext(HttpClient)),
     Layer.provide(RpcSerialization.layerNdjson),
 )
 

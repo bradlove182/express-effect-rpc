@@ -1,32 +1,23 @@
 // oxlint-disable-next-line effecttsgo/node-builtin-import -- Required for express
-import { createServer, type Server } from "node:http"
-
-import { NodeRuntime, NodeSocketServer } from "@effect/platform-node"
-import { CatalogRpc } from "catalog-core"
-import { SERVER_PORT } from "catalog-core/dev"
+import { createServer } from "node:http"
+import { NodeRuntime } from "@effect/platform-node"
+import { SERVER_PORT } from "../../../packages/core/src/dev"
 import { Effect, Layer } from "effect"
-import { RpcSerialization, RpcServer } from "effect/unstable/rpc"
 import express from "express"
+import { CatalogApiLayer } from "./handlers"
+import { layer as HttpRouterLayer } from "effect/unstable/http/HttpRouter";
 
-import { CatalogHandlers } from "./handlers"
-
-const RpcLive = (server: Server) =>
-    RpcServer.layer(CatalogRpc).pipe(
-        Layer.provide(CatalogHandlers),
-        Layer.provide(RpcServer.layerProtocolSocketServer),
-        Layer.provide(NodeSocketServer.layerWebSocket({ server, path: "/rpc" })),
-        Layer.provide(RpcSerialization.layerNdjson),
-    )
+const mainLayer = HttpRouterLayer.pipe(
+    Layer.provide(CatalogApiLayer),
+)
 
 const main = Effect.gen(function* () {
     const app = express()
     const server = createServer(app)
 
-    // `ws` forwards the http server's `listening` event, so the socket server
-    // layer must attach before `listen` is called.
     yield* Effect.all(
         [
-            Layer.launch(RpcLive(server)),
+            Layer.launch(mainLayer),
             Effect.sync(() => server.listen(SERVER_PORT)),
             Effect.log(`Server listening on port ${SERVER_PORT}`),
         ],

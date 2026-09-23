@@ -5,12 +5,12 @@
     "module": "index.ts",
     "exports": {
         ".": {
-            "import": "./index.ts",
-            "types": "./index.ts"
+            "import": "./src/index.ts",
+            "types": "./src/index.ts"
         },
         "./dev": {
-            "import": "./dev.ts",
-            "types": "./dev.ts"
+            "import": "./src/dev.ts",
+            "types": "./src/dev.ts"
         }
     },
     "dependencies": {

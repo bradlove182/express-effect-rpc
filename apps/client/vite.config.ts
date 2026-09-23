@@ -2,7 +2,7 @@ import tailwindcss from '@tailwindcss/vite';
 import adapter from '@sveltejs/adapter-auto';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-import { CLIENT_PORT } from "catalog-core/dev"
+import { CLIENT_PORT } from "../../packages/core/src/dev"
 
 export default defineConfig({
     server: {

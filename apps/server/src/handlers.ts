@@ -1,20 +1,47 @@
 import { Effect } from "effect"
-import { CatalogRpc, Catalog, CatalogItem, CatalogItemNotFound, HealthResponse } from "catalog-core"
+import { HttpApiBuilder } from "effect/unstable/httpapi"
+import { Catalog, CatalogApi, CatalogItem, CatalogItemNotFound, HealthResponse } from "catalog-core"
+import { items } from "./data"
 
-const items = [
-    new CatalogItem({ id: 1, name: "Desk", price: 249, category: "furniture", imageUrl: "/desk.png" }),
-    new CatalogItem({ id: 2, name: "Lamp", price: 39, category: "lighting", imageUrl: "/lamp.png" })
-]
+export const CatalogApiLayer = HttpApiBuilder.group(
+    CatalogApi,
+    "CatalogApiGroup",
+    (handlers) => {
+        return handlers
+            .handle("health", () => Effect.succeed(new HealthResponse({ success: "ok" })))
+            .handle("list", () => Effect.succeed(new Catalog({ items })))
+            .handle("getById", ({ payload }) => {
+                const item = items.find((item) => item.id === payload.id)
 
-export const CatalogHandlers = CatalogRpc.toLayer({
-    health: () => Effect.succeed(new HealthResponse({ success: "ok" })),
-    getCatalog: () => Effect.succeed(new Catalog({ items })),
-    getCatalogItem: ({ id }) =>
-        Effect.gen(function*() {
-            const item = items.find((candidate) => candidate.id === id)
-            if (item === undefined) {
-                return yield* new CatalogItemNotFound({ details: `Item with id ${id} not found` })
-            }
-            return item
-        })
-})
+                if (!item) {
+                    return new CatalogItemNotFound({ details: `Catalog item with ${payload.id} not found.` })
+                }
+
+                return Effect.succeed(item)
+            })
+            .handle("enrichList", () => Effect.succeed(
+                new Catalog({
+                    items: items.map(item => (
+                        new CatalogItem({
+                            // oxlint-disable-next-line typescript/no-misused-spread -- Fine here because we are creating a new instance
+                            ...item,
+                            price: item.price * 1.1
+                        })
+                    ))
+                })))
+            .handle("enrichById", ({ payload }) => {
+                const item = items.find((item) => item.id === payload.id)
+
+                if (!item) {
+                    return new CatalogItemNotFound({ details: `Catalog item with ${payload.id} not found.` })
+                }
+
+                return Effect.succeed(
+                    Object.assign(
+                        item,
+                        { price: item.price * 1.1 }
+                    )
+                )
+            })
+  }
+)
