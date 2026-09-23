@@ -20,7 +20,7 @@ function enrichCatalogItem(item: CatalogItem) {
 
 export const CatalogApiLayer = HttpApiBuilder.group(
     CatalogApi,
-    "CatalogApiGroup",
+    "packages/core/api/CatalogApiGroup",
     (handlers) => {
         return handlers
             .handle("health", () => Effect.succeed(new HealthResponse({ success: "ok" })))

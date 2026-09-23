@@ -2,11 +2,16 @@ import { Layer } from "effect"
 import { HttpApiBuilder, HttpApiScalar } from "effect/unstable/httpapi"
 import { CatalogApi } from "catalog-core"
 import { CatalogApiLayer } from "./handlers.ts";
+import { HttpRouter } from "effect/unstable/http";
 
 export const apiRoutes = HttpApiBuilder.layer(CatalogApi, {
   openapiPath: "/openapi.json"
 }).pipe(
-  Layer.provide(CatalogApiLayer)
+    Layer.provide(CatalogApiLayer),
+    Layer.provide(HttpRouter.cors({
+      allowedOrigins: ["*"],
+      credentials: true,
+    }))
 )
 
 export const docsRoutes = HttpApiScalar.layer(CatalogApi, {
