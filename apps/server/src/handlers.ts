@@ -10,14 +10,17 @@ export const CatalogApiLayer = HttpApiBuilder.group(
         return handlers
             .handle("health", () => Effect.succeed(new HealthResponse({ success: "ok" })))
             .handle("list", () => Effect.succeed(new Catalog({ items })))
-            .handle("getById", ({ payload }) => {
-                const item = items.find((item) => item.id === payload.id)
+            .handle("getById", ({ params }) => {
+                return Effect.gen(function*() {
+                    const item = items.find((item) => item.id === params.id)
 
-                if (!item) {
-                    return new CatalogItemNotFound({ details: `Catalog item with ${payload.id} not found.` })
-                }
+                    if (!item) {
+                        return yield* new CatalogItemNotFound({ details: `Catalog item with ${params.id} not found.` })
+                    }
 
-                return Effect.succeed(item)
+                    return yield* Effect.succeed(item)
+                })
+
             })
             .handle("enrichList", () => Effect.succeed(
                 new Catalog({
@@ -25,23 +28,25 @@ export const CatalogApiLayer = HttpApiBuilder.group(
                         new CatalogItem({
                             // oxlint-disable-next-line typescript/no-misused-spread -- Fine here because we are creating a new instance
                             ...item,
-                            price: item.price * 1.1
+                            price: item.price * 2
                         })
                     ))
                 })))
-            .handle("enrichById", ({ payload }) => {
-                const item = items.find((item) => item.id === payload.id)
+            .handle("enrichById", ({ params }) => {
+                return Effect.gen(function*() {
+                    const item = items.find((item) => item.id === params.id)
 
-                if (!item) {
-                    return new CatalogItemNotFound({ details: `Catalog item with ${payload.id} not found.` })
-                }
+                    if (!item) {
+                        return yield* new CatalogItemNotFound({ details: `Catalog item with ${params.id} not found.` })
+                    }
 
-                return Effect.succeed(
-                    Object.assign(
-                        item,
-                        { price: item.price * 1.1 }
+                    return yield* Effect.succeed(
+                        Object.assign(
+                            item,
+                            { price: item.price * 1.1 }
+                        )
                     )
-                )
+                })
             })
-  }
+    }
 )

@@ -10,7 +10,7 @@ export class HealthResponse extends Schema.TaggedClass<HealthResponse>()(
 export class CatalogItemNotFound extends Schema.TaggedError<CatalogItemNotFound>()(
     "packages/core/schema/CatalogItemNotFound",
     {
-        details: Schema.String
+        details: Schema.String,
     }
 ) {}
 
