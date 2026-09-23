@@ -1,7 +1,22 @@
-import { Effect } from "effect"
+import { Effect, Random } from "effect"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
-import { Catalog, CatalogApi, CatalogItem, CatalogItemNotFound, HealthResponse } from "catalog-core"
+import { Catalog, CatalogApi, CatalogItem, CatalogItemNotFound, EnrichmentServiceUnavailable, HealthResponse, maybeSuccessWithDelay } from "catalog-core"
 import { items } from "./data"
+
+function enrichCatalogItem(item: CatalogItem) {
+    return Effect.gen(function*() {
+        const random = yield* Random.next
+        return yield* Effect.succeed(
+            Object.assign(
+                item,
+                {
+                    discountedPrice: item.price * random,
+                    inStock: random > 0.5
+                }
+            )
+        )
+    })
+}
 
 export const CatalogApiLayer = HttpApiBuilder.group(
     CatalogApi,
@@ -22,30 +37,42 @@ export const CatalogApiLayer = HttpApiBuilder.group(
                 })
 
             })
-            .handle("enrichList", () => Effect.succeed(
-                new Catalog({
-                    items: items.map(item => (
-                        new CatalogItem({
-                            // oxlint-disable-next-line typescript/no-misused-spread -- Fine here because we are creating a new instance
-                            ...item,
-                            price: item.price * 2
+            .handle("enrichList", () => {
+                return Effect.gen(function*() {
+                    const success = yield* maybeSuccessWithDelay(1000)
+
+                    if (!success) {
+                        return yield* new EnrichmentServiceUnavailable({
+                            details: "Enrichment service is currently unavailable."
                         })
-                    ))
-                })))
+
+                    }
+
+                    const enrichedItems = yield* Effect.forEach(items, enrichCatalogItem)
+
+                    return yield* Effect.succeed(new Catalog({ items: enrichedItems }))
+                })
+            })
             .handle("enrichById", ({ params }) => {
                 return Effect.gen(function*() {
+                    const success = yield* maybeSuccessWithDelay(1000)
+
+                    if (!success) {
+                        return yield* new EnrichmentServiceUnavailable({
+                            details: "Enrichment service is currently unavailable."
+                        })
+
+                    }
+
                     const item = items.find((item) => item.id === params.id)
 
                     if (!item) {
                         return yield* new CatalogItemNotFound({ details: `Catalog item with ${params.id} not found.` })
                     }
 
-                    return yield* Effect.succeed(
-                        Object.assign(
-                            item,
-                            { price: item.price * 1.1 }
-                        )
-                    )
+                    const enrichedItem = yield* enrichCatalogItem(item)
+
+                    return yield* Effect.succeed(enrichedItem)
                 })
             })
     }

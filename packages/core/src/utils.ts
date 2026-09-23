@@ -1,13 +1,13 @@
 import { Effect, Random } from "effect"
 
 export const maybeSuccess = Effect.gen(function*() {
-        const random = yield* Random.next
-        if (random < 0.5) {
-            return true
-        } else {
-            return false
-        }
-    })
+    const random = yield* Random.next
+    if (random < 0.2) {
+        return true
+    } else {
+        return false
+    }
+})
 
 export function maybeSuccessWithDelay(delay?: number) {
     return Effect.gen(function*() {

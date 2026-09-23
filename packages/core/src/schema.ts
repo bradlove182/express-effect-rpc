@@ -21,7 +21,9 @@ export class CatalogItem extends Schema.TaggedClass<CatalogItem>()(
         name: Schema.String,
         price: Schema.Finite,
         category: Schema.String,
-        imageUrl: Schema.String
+        imageUrl: Schema.String,
+        inStock: Schema.optional(Schema.Boolean),
+        discountedPrice: Schema.optional(Schema.Finite),
     }
 ) { }
 
@@ -31,3 +33,10 @@ export class Catalog extends Schema.TaggedClass<Catalog>()(
         items: Schema.Array(CatalogItem)
     }
 ) { }
+
+export class EnrichmentServiceUnavailable extends Schema.TaggedError<EnrichmentServiceUnavailable>()(
+    "packages/core/schema/EnrichmentServiceUnavailable",
+    {
+        details: Schema.String
+    }
+) {}
