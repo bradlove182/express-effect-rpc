@@ -1,22 +1,20 @@
 <script lang="ts">
-    let items = $state<
-        Readonly<
-            Array<{ id: number; name: string; price: number; category: string }>
-        >
-    >([]);
-    let health = $state<string>("");
-    let error = $state<string>("");
+    import { useApiClient } from "#lib/hooks.svelte.ts";
+    import { CatalogQuery } from "catalog-core";
+    import { Effect } from "effect";
+
+    const { client } = useApiClient();
+
+    const query = $state<CatalogQuery>(new CatalogQuery());
 </script>
 
 <div class="prose">
     <h1>Catalog</h1>
-    <p>Health: {health}</p>
-    {#if error}
-        <p class="text-red-500">{error}</p>
-    {/if}
-    <ul>
-        {#each items as item (item.id)}
-            <li>{item.name} — ${item.price} ({item.category})</li>
+    {#await Effect.runPromise(client.list({ query }))}
+        loading...
+    {:then catalog}
+        {#each catalog as item (item.id)}
+            {item.name}
         {/each}
-    </ul>
+    {/await}
 </div>

@@ -1,4 +1,4 @@
-import { Effect, Random } from "effect"
+import { Effect, Random, pipe, String } from "effect"
 
 export const maybeSuccess = Effect.gen(function*() {
     const random = yield* Random.next
@@ -9,6 +9,9 @@ export const maybeSuccess = Effect.gen(function*() {
     }
 })
 
+/**
+ * Use this function to simulate an upstream providers potential delay or availability
+ */
 export function maybeSuccessWithDelay(delay?: number) {
     return Effect.gen(function*() {
         const random = yield* Random.next
@@ -16,4 +19,12 @@ export function maybeSuccessWithDelay(delay?: number) {
         yield* Effect.sleep(currentDelay)
         return yield* maybeSuccess
     })
+}
+
+export function normalize(str: string) {
+    return pipe(
+        str,
+        String.trim,
+        String.toLowerCase
+    )
 }

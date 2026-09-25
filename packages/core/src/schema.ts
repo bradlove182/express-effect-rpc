@@ -7,6 +7,16 @@ export class HealthResponse extends Schema.TaggedClass<HealthResponse>()(
     }
 ) { }
 
+export class CatalogQuery extends Schema.TaggedClass<CatalogQuery>()(
+    "packages/core/schema/CatalogQuery",
+    {
+        query: Schema.optionalKey(Schema.String),
+        offset: Schema.optionalKey(Schema.Finite),
+        sort: Schema.optionalKey(Schema.String),
+        filter: Schema.optionalKey(Schema.String)
+    }
+) {}
+
 export class CatalogItemNotFound extends Schema.TaggedError<CatalogItemNotFound>()(
     "packages/core/schema/CatalogItemNotFound",
     {
@@ -22,15 +32,8 @@ export class CatalogItem extends Schema.TaggedClass<CatalogItem>()(
         price: Schema.Finite,
         category: Schema.String,
         imageUrl: Schema.String,
-        inStock: Schema.optional(Schema.Boolean),
-        discountedPrice: Schema.optional(Schema.Finite),
-    }
-) { }
-
-export class Catalog extends Schema.TaggedClass<Catalog>()(
-    "packages/core/schema/Catalog",
-    {
-        items: Schema.Array(CatalogItem)
+        inStock: Schema.optionalKey(Schema.Boolean),
+        discountedPrice: Schema.optionalKey(Schema.Finite),
     }
 ) { }
 

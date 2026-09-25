@@ -1,5 +1,5 @@
 import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiError, HttpApiGroup, OpenApi } from "effect/unstable/httpapi"
-import { Catalog, CatalogItem, CatalogItemNotFound, HealthResponse, EnrichmentServiceUnavailable } from "./"
+import { CatalogItem, CatalogItemNotFound, HealthResponse, EnrichmentServiceUnavailable, CatalogQuery } from "./"
 import { Schema } from "effect";
 import { SERVER_PORT } from "./dev"
 import { FetchHttpClient } from "effect/unstable/http";
@@ -10,8 +10,9 @@ export class CatalogApiGroup extends HttpApiGroup.make("packages/core/api/Catalo
     HttpApiEndpoint.get("health", "/health", {
         success: HealthResponse
     }),
-    HttpApiEndpoint.get("list", "/catalog", {
-        success: Catalog,
+      HttpApiEndpoint.get("list", "/catalog", {
+        query: Schema.optionalKey(CatalogQuery),
+        success: Schema.Array(CatalogItem),
         error: HttpApiError.InternalServerErrorNoContent
     }),
     HttpApiEndpoint.get("getById", "/catalog/:id", {
@@ -20,7 +21,7 @@ export class CatalogApiGroup extends HttpApiGroup.make("packages/core/api/Catalo
         error: [CatalogItemNotFound, HttpApiError.InternalServerErrorNoContent]
     }),
       HttpApiEndpoint.get("enrichList", "/catalog/enrich", {
-          success: Catalog,
+          success: Schema.Array(CatalogItem),
           error: [EnrichmentServiceUnavailable, HttpApiError.InternalServerErrorNoContent]
       }),
     HttpApiEndpoint.get("enrichById", "/catalog/:id/enrich", {

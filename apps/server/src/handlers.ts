@@ -1,7 +1,16 @@
 import { Effect, Random } from "effect"
 import { HttpApiBuilder } from "effect/unstable/httpapi"
-import { Catalog, CatalogApi, CatalogItem, CatalogItemNotFound, EnrichmentServiceUnavailable, HealthResponse, maybeSuccessWithDelay } from "catalog-core"
+import {
+    CatalogApi,
+    CatalogItem,
+    CatalogItemNotFound,
+    CatalogQuery,
+    EnrichmentServiceUnavailable,
+    HealthResponse,
+    maybeSuccessWithDelay,
+} from "catalog-core"
 import { items } from "./data"
+import { CatalogService } from "./services";
 
 function enrichCatalogItem(item: CatalogItem) {
     return Effect.gen(function*() {
@@ -24,7 +33,20 @@ export const CatalogApiLayer = HttpApiBuilder.group(
     (handlers) => {
         return handlers
             .handle("health", () => Effect.succeed(new HealthResponse({ success: "ok" })))
-            .handle("list", () => Effect.succeed(new Catalog({ items })))
+            .handle("list", ({ query }) => {
+                return Effect.gen(function*() {
+                    const catalog = yield* CatalogService
+
+                    const currentQuery = new CatalogQuery({
+                        offset: 0,
+                        sort: "price",
+                        ...query
+                    })
+
+                    return yield* catalog.search(items, currentQuery)
+                })
+
+            })
             .handle("getById", ({ params }) => {
                 return Effect.gen(function*() {
                     const item = items.find((item) => item.id === params.id)
@@ -33,9 +55,8 @@ export const CatalogApiLayer = HttpApiBuilder.group(
                         return yield* new CatalogItemNotFound({ details: `Catalog item with ${params.id} not found.` })
                     }
 
-                    return yield* Effect.succeed(item)
+                    return item
                 })
-
             })
             .handle("enrichList", () => {
                 return Effect.gen(function*() {
@@ -48,9 +69,7 @@ export const CatalogApiLayer = HttpApiBuilder.group(
 
                     }
 
-                    const enrichedItems = yield* Effect.forEach(items, enrichCatalogItem)
-
-                    return yield* Effect.succeed(new Catalog({ items: enrichedItems }))
+                    return yield* Effect.forEach(items, enrichCatalogItem)
                 })
             })
             .handle("enrichById", ({ params }) => {
@@ -72,7 +91,7 @@ export const CatalogApiLayer = HttpApiBuilder.group(
 
                     const enrichedItem = yield* enrichCatalogItem(item)
 
-                    return yield* Effect.succeed(enrichedItem)
+                    return enrichedItem
                 })
             })
     }
