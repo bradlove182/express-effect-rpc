@@ -9,14 +9,20 @@ export const maybeSuccess = Effect.gen(function*() {
     }
 })
 
+export function delay(time?: number) {
+    return Effect.gen(function*() {
+        const random = yield* Random.next
+        const currentDelay = time ? time * random : random * 1000
+        yield* Effect.sleep(currentDelay)
+    })
+}
+
 /**
  * Use this function to simulate an upstream providers potential delay or availability
  */
-export function maybeSuccessWithDelay(delay?: number) {
+export function maybeSuccessWithDelay(time?: number) {
     return Effect.gen(function*() {
-        const random = yield* Random.next
-        const currentDelay = delay ? delay * random : random * 1000
-        yield* Effect.sleep(currentDelay)
+        yield* delay(time)
         return yield* maybeSuccess
     })
 }

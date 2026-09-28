@@ -1,4 +1,4 @@
-import { CatalogItem, CatalogItemNotFound, CatalogQuery, EnrichmentServiceUnavailable, maybeSuccessWithDelay, normalize } from "catalog-core";
+import { CatalogItem, CatalogItemNotFound, CatalogQuery, EnrichmentServiceUnavailable, maybeSuccessWithDelay, normalize, delay } from "catalog-core";
 import { Context, Effect, String, pipe, Array, Order, Layer, Random } from "effect";
 
 export class CatalogService extends Context.Service<
@@ -25,6 +25,8 @@ export class CatalogService extends Context.Service<
             },
             search: (items, query) => {
                 return Effect.gen(function*() {
+
+                    yield* delay(1000)
 
                     if (!query.query) {
                         return yield* Effect.succeed(items)
