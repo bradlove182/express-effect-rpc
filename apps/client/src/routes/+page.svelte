@@ -1,20 +1,56 @@
 <script lang="ts">
-    import { useApiClient } from "#lib/hooks.svelte.ts";
+    import { enrich, list } from "#lib/data.remote.ts";
+    import { useSearchParams } from "#lib/hooks.svelte.ts";
     import { CatalogQuery } from "catalog-core";
-    import { Effect } from "effect";
+    import { Schema } from "effect";
+    import { onMount } from "svelte";
 
-    const { client } = useApiClient();
+    let query = $state<CatalogQuery>(
+        Schema.encodeSync(CatalogQuery)(new CatalogQuery()),
+    );
 
-    const query = $state<CatalogQuery>(new CatalogQuery());
+    const { getParam } = useSearchParams(() => query);
+
+    onMount(() => {
+        const q = getParam("query");
+
+        if (q) {
+            query = Schema.encodeSync(CatalogQuery)(
+                new CatalogQuery({
+                    query: q.toString(),
+                }),
+            );
+        }
+    });
 </script>
 
 <div class="prose">
     <h1>Catalog</h1>
-    {#await Effect.runPromise(client.list({ query }))}
+    <input
+        value={getParam("query")}
+        onkeyup={(e) => {
+            query = Schema.encodeSync(CatalogQuery)(
+                new CatalogQuery({
+                    query: e.currentTarget.value,
+                }),
+            );
+        }}
+    />
+    {#await list(query)}
         loading...
     {:then catalog}
         {#each catalog as item (item.id)}
-            {item.name}
+            <div>
+                {#await enrich(item.id)}
+                    {item.name} - {item.price}
+                {:then enrichedItem}
+                    {enrichedItem.name} - {enrichedItem.discountedPrice}
+                {:catch}
+                    {item.name} - {item.price}
+                {/await}
+            </div>
         {/each}
+    {:catch error}
+        {error.details}
     {/await}
 </div>

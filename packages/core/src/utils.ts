@@ -2,7 +2,7 @@ import { Effect, Random, pipe, String } from "effect"
 
 export const maybeSuccess = Effect.gen(function*() {
     const random = yield* Random.next
-    if (random < 0.2) {
+    if (random < 0.8) {
         return true
     } else {
         return false

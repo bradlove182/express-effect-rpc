@@ -1,5 +1,9 @@
-import { Effect } from "effect"
-import { apiClient } from "catalog-core"
+import { Array, Effect, pipe, Record, Struct } from "effect"
+import { apiClient, CatalogQuery } from "catalog-core"
+import { SvelteURLSearchParams } from "svelte/reactivity"
+import { tick } from "svelte"
+import { goto } from "$app/navigation"
+import { page } from "$app/state"
 
 export function useApiClient() {
 
@@ -7,5 +11,61 @@ export function useApiClient() {
 
     return {
         client
+    }
+}
+
+/**
+ * A reactive hook that syncs an object's state with URL search parameters.
+ * Automatically updates the URL query string when the state object changes.
+ * Uses goto.replace to update the URL without adding to browser history.
+ *
+ * @param getter - A function that returns an object containing the search parameters to sync with URL
+ * @example
+ * const searchParams = $state({ query: 'test', page: '1' });
+ * useSearchParams(() => searchParams);
+ * // URL updates to "?query=test&page=1"
+ */
+export function useSearchParams<T extends CatalogQuery>(getter: () => T) {
+    const state = $derived.by(() => {
+        // We strip Effect _tags here so they do not show up in the url params
+        const { _tag, ...current} = getter()
+
+        return pipe(
+            Struct.keys(current),
+            Array.reduce({} as Record<string, string>, (acc, key) => {
+                acc[key] = JSON.stringify(current[key])
+                return acc
+            }),
+        )
+    })
+
+    const params = new SvelteURLSearchParams(state)
+
+    $effect(() => {
+        if (state && Record.values(state).some(value => value !== undefined)) {
+            Struct.keys(state).forEach(key => params.set(key, state[key]))
+            void tick().then(() => {
+                // Not a hand-written route string for `resolve()` to check —
+                // this only ever echoes back the current page's own
+                // (already-resolved) pathname with an updated query string.
+                void goto(
+                    `${page.url.pathname}?${params.toString()}`,
+                    {
+                        state: page.state,
+                        shallow: true,
+                        replace: true
+                    }
+                )
+            })
+        }
+    })
+
+    const getParam = (key: keyof T): T[keyof T] | undefined => {
+        const value = page.url.searchParams.get(key.toString())
+        return value ? JSON.parse(value) : undefined
+    }
+
+    return {
+        getParam,
     }
 }

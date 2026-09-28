@@ -20,10 +20,6 @@ export class CatalogApiGroup extends HttpApiGroup.make("packages/core/api/Catalo
         success: CatalogItem,
         error: [CatalogItemNotFound, HttpApiError.InternalServerErrorNoContent]
     }),
-      HttpApiEndpoint.get("enrichList", "/catalog/enrich", {
-          success: Schema.Array(CatalogItem),
-          error: [EnrichmentServiceUnavailable, HttpApiError.InternalServerErrorNoContent]
-      }),
     HttpApiEndpoint.get("enrichById", "/catalog/:id/enrich", {
         params: { id: Schema.Finite },
         success: CatalogItem,

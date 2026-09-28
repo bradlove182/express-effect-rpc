@@ -1,16 +1,29 @@
-import { CatalogItem, CatalogQuery, normalize } from "catalog-core";
-import { Context, Effect, String, pipe, Array, Order, Layer } from "effect";
+import { CatalogItem, CatalogItemNotFound, CatalogQuery, EnrichmentServiceUnavailable, maybeSuccessWithDelay, normalize } from "catalog-core";
+import { Context, Effect, String, pipe, Array, Order, Layer, Random } from "effect";
 
 export class CatalogService extends Context.Service<
     CatalogService,
     {
-        search: (items: CatalogItem[], query: CatalogQuery) => Effect.Effect<CatalogItem[]>
+        getById: (items: CatalogItem[], id: CatalogItem["id"]) => Effect.Effect<CatalogItem, CatalogItemNotFound>,
+        search: (items: CatalogItem[], query: CatalogQuery) => Effect.Effect<CatalogItem[]>,
+        enrichById: (items: CatalogItem[], id: CatalogItem["id"]) => Effect.Effect<CatalogItem, EnrichmentServiceUnavailable | CatalogItemNotFound>,
     }
 >()(
     "apps/server/src/services/CatalogService",
     {
         make: Effect.succeed({
-            search: (items: CatalogItem[], query: CatalogQuery) => {
+            getById: (items, id) => {
+                return Effect.gen(function*() {
+                    const item = items.find((item) => item.id === id)
+
+                    if (!item) {
+                        return yield* new CatalogItemNotFound({ details: `Catalog item with ${id} not found.` })
+                    }
+
+                    return item
+                })
+            },
+            search: (items, query) => {
                 return Effect.gen(function*() {
 
                     if (!query.query) {
@@ -56,9 +69,35 @@ export class CatalogService extends Context.Service<
                             }
                         }),
                         Array.filter(Boolean),
+                        // It is ok to assert the the existence here because we filtered out any undefined values
                         Array.sortBy((a, b) => Order.Number(b!.score, a!.score) || Order.String(a!.item.name, b!.item.name)),
                         Array.map(item => item!.item)
                     )
+                })
+            },
+            enrichById: (items, id) => {
+                return Effect.gen(function*() {
+                    const random = yield* Random.next
+                    const success = yield* maybeSuccessWithDelay(500)
+
+                    if (!success) {
+                        return yield* new EnrichmentServiceUnavailable({
+                            details: "Enrichment service is currently unavailable."
+                        })
+                    }
+
+                    const item = items.find(curr => curr.id === id)
+
+                    if (!item) {
+                        return yield* new CatalogItemNotFound({ details: `Catalog item with ${id} not found.` })
+                    }
+
+                    return new CatalogItem({
+                        // oxlint-disable-next-line typescript/no-misused-spread -- We reconstructing the prototype
+                        ...item,
+                        discountedPrice: item.price * random,
+                        inStock: random > 0.5
+                    })
                 })
             }
         })
