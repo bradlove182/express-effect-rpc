@@ -1,6 +1,6 @@
 import { query } from "$app/server"
 import { error } from "@sveltejs/kit";
-import { useApiClient } from "./hooks.svelte";
+import { useApiClient } from "../hooks/hooks.svelte";
 import { Effect, Result, Schema } from "effect"
 import { CatalogQuery, CatalogItem } from "catalog-core";
 

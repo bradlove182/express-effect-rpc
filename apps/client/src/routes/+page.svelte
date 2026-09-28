@@ -1,6 +1,7 @@
 <script lang="ts">
-    import { enrich, list } from "#lib/data.remote.ts";
-    import { useSearchParams } from "#lib/hooks.svelte.ts";
+    import Input from "#lib/components/input/input.svelte";
+    import { enrich, list } from "#lib/data/data.remote.ts";
+    import { useSearchParams } from "#lib/hooks/hooks.svelte.ts";
     import { CatalogQuery } from "catalog-core";
     import { Schema } from "effect";
     import { onMount } from "svelte";
@@ -24,9 +25,9 @@
     });
 </script>
 
-<div class="prose">
+<div class="container mx-auto">
     <h1>Catalog</h1>
-    <input
+    <Input
         value={getParam("query")}
         onkeyup={(e) => {
             query = Schema.encodeSync(CatalogQuery)(
@@ -35,6 +36,7 @@
                 }),
             );
         }}
+        placeholder="Search Catalog"
     />
     {#await list(query)}
         loading...
