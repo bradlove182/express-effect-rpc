@@ -1,4 +1,4 @@
-import { Effect, Random, pipe, String } from "effect"
+import { Effect, Random, pipe, String, Duration, FiberHandle, Queue, Stream } from "effect"
 
 export const maybeSuccess = Effect.gen(function*() {
     const random = yield* Random.next
@@ -34,3 +34,17 @@ export function normalize(str: string) {
         String.toLowerCase
     )
 }
+
+export const debounce = <A, E, R>(
+  f: (a: A) => Effect.Effect<void, E, R>,
+  delay: Duration.Input
+) =>
+  Effect.gen(function* () {
+    const queue = yield* Queue.make<A>()
+    yield* Stream.fromQueue(queue).pipe(
+      Stream.debounce(delay),
+      Stream.runForEach(f),
+      Effect.forkChild
+    )
+    return (a: A) => Queue.offer(queue, a).pipe(Effect.asVoid)
+  })

@@ -1,7 +1,7 @@
-import { Array, Effect, pipe, Record, Struct } from "effect"
+import { Array, Duration, Effect, Fiber, pipe, Queue, Record, Stream, Struct } from "effect"
 import { apiClient, CatalogQuery } from "catalog-core"
 import { SvelteURLSearchParams } from "svelte/reactivity"
-import { tick } from "svelte"
+import { onDestroy, tick } from "svelte"
 import { goto } from "$app/navigation"
 import { page } from "$app/state"
 
@@ -68,4 +68,25 @@ export function useSearchParams<T extends CatalogQuery>(getter: () => T) {
     return {
         getParam,
     }
+}
+
+export function useDebounce<A, E>(
+    f: (a: A) => Effect.Effect<void, E>,
+    delay: Duration.Input,
+): (a: A) => void {
+    const queue = Effect.runSync(Queue.make<A>());
+    const fiber = Effect.runFork(
+        Stream.fromQueue(queue).pipe(
+            Stream.debounce(delay),
+            Stream.runForEach(f),
+        ),
+    );
+
+    onDestroy(() => {
+        Effect.runFork(Fiber.interrupt(fiber));
+    });
+
+    return (a) => {
+        Effect.runSync(Queue.offer(queue, a));
+    };
 }
