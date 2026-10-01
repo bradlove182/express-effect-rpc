@@ -2,7 +2,7 @@ import { query } from "$app/server"
 import { error } from "@sveltejs/kit";
 import { useApiClient } from "../hooks/hooks.svelte";
 import { Effect, Result, Schema } from "effect"
-import { CatalogQuery, CatalogItem } from "catalog-core";
+import { CatalogQuery, CatalogItem, CatalogCategory } from "catalog-core";
 
 export const list = query(
     Schema.toStandardSchemaV1(CatalogQuery),
@@ -40,6 +40,21 @@ export const enrich = query.batch(
             // oxlint-disable-next-line effecttsgo/schema-sync
             return Schema.encodeSync(CatalogItem)(result.success)
         }
+
+    }
+)
+
+export const categories = query(
+    "unchecked",
+    // oxlint-disable-next-line effecttsgo/async-function
+    async () => {
+
+        const { client } = useApiClient()
+
+        const results = await client.categories().pipe(Effect.runPromise)
+
+        // oxlint-disable-next-line effecttsgo/schema-sync
+        return Schema.encodeSync(Schema.Array(CatalogCategory))(results)
 
     }
 )

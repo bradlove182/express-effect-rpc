@@ -33,6 +33,9 @@ export function useSearchParams<T extends CatalogQuery>(getter: () => T) {
         return pipe(
             Struct.keys(current),
             Array.reduce({} as Record<string, string>, (acc, key) => {
+                if (current[key] === undefined) {
+                    return acc
+                }
                 acc[key] = JSON.stringify(current[key])
                 return acc
             }),

@@ -30,6 +30,9 @@
             </Badge>
         {/if}
     </Card.Action>
+    <Card.Description class="uppercase text-[10px] tracking-wider">
+        {item.category}
+    </Card.Description>
     <Card.Title>
         {item.name}
     </Card.Title>
@@ -42,7 +45,7 @@
     <img
         src={item.imageUrl}
         alt={item.name}
-        class="relative z-20 aspect-video w-full object-cover"
+        class="relative aspect-video w-full object-cover"
     />
     <Card.Header>
         {#await enrich(item.id)}

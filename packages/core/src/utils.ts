@@ -1,4 +1,4 @@
-import { Effect, Random, pipe, String, Duration, FiberHandle, Queue, Stream } from "effect"
+import { Effect, Random, pipe, String, Duration, Queue, Stream } from "effect"
 
 export const maybeSuccess = Effect.gen(function*() {
     const random = yield* Random.next

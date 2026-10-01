@@ -10,10 +10,10 @@ export class HealthResponse extends Schema.TaggedClass<HealthResponse>()(
 export class CatalogQuery extends Schema.TaggedClass<CatalogQuery>()(
     "packages/core/schema/CatalogQuery",
     {
-        query: Schema.optionalKey(Schema.String),
-        offset: Schema.optionalKey(Schema.Finite),
-        sort: Schema.optionalKey(Schema.String),
-        filter: Schema.optionalKey(Schema.String)
+        query: Schema.optional(Schema.String),
+        offset: Schema.optional(Schema.Finite),
+        sort: Schema.optional(Schema.Union([Schema.Literal("price"), Schema.Literal("default")])),
+        filter: Schema.optional(Schema.String)
     }
 ) {}
 
@@ -34,6 +34,14 @@ export class CatalogItem extends Schema.TaggedClass<CatalogItem>()(
         imageUrl: Schema.String,
         inStock: Schema.optionalKey(Schema.Boolean),
         discountedPrice: Schema.optionalKey(Schema.Finite),
+    }
+) { }
+
+export class CatalogCategory extends Schema.TaggedClass<CatalogCategory>()(
+    "packages/core/schema/CatalogCategory",
+    {
+        id: Schema.Finite,
+        name: Schema.String
     }
 ) { }
 

@@ -19,8 +19,6 @@ export const CatalogApiLayer = HttpApiBuilder.group(
                     const catalog = yield* CatalogService
 
                     const currentQuery = new CatalogQuery({
-                        offset: 0,
-                        sort: "price",
                         ...query
                     })
 
@@ -40,6 +38,13 @@ export const CatalogApiLayer = HttpApiBuilder.group(
                     const catalog = yield* CatalogService
 
                     return yield* catalog.enrichById(items, params.id)
+                })
+            })
+            .handle("categories", () => {
+                return Effect.gen(function*() {
+                    const catalog = yield* CatalogService
+
+                    return yield* catalog.categories(items)
                 })
             })
     }
