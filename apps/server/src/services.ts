@@ -1,5 +1,37 @@
-import { CatalogItem, CatalogItemNotFound, CatalogQuery, EnrichmentServiceUnavailable, maybeSuccessWithDelay, normalize, delay, CatalogCategory } from "catalog-core";
+import { CatalogItem, CatalogItemNotFound, CatalogQuery, CatalogSearchResult, EnrichmentServiceUnavailable, maybeSuccessWithDelay, normalize, CatalogCategory } from "catalog-core";
 import { Context, Effect, String, pipe, Array, Order, Layer, Random } from "effect";
+
+function quoteFromRandom(item: CatalogItem, random: number) {
+    const low = 20 + Math.round(random * 25)
+
+    return new CatalogItem({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        category: item.category,
+        imageUrl: item.imageUrl,
+        discountedPrice: item.price * random,
+        inStock: random > 0.5,
+        deliveryEstimate: `${low}–${low + 15} min`,
+    })
+}
+
+const liveQuote = (item: CatalogItem) =>
+    Effect.gen(function* () {
+        const random = yield* Random.next
+        const success = yield* maybeSuccessWithDelay(500)
+
+        if (!success) {
+            return new CatalogSearchResult({
+                item,
+                enrichmentError: "Live price and availability are unavailable.",
+            })
+        }
+
+        return new CatalogSearchResult({
+            item: quoteFromRandom(item, random),
+        })
+    })
 
 function rank(items: CatalogItem[], query: string) {
     const tokens = pipe(
@@ -50,7 +82,7 @@ export class CatalogService extends Context.Service<
     CatalogService,
     {
         getById: (items: CatalogItem[], id: CatalogItem["id"]) => Effect.Effect<CatalogItem, CatalogItemNotFound>,
-        search: (items: CatalogItem[], query: CatalogQuery) => Effect.Effect<CatalogItem[]>,
+        search: (items: CatalogItem[], query: CatalogQuery) => Effect.Effect<CatalogSearchResult[]>,
         enrichById: (items: CatalogItem[], id: CatalogItem["id"]) => Effect.Effect<CatalogItem, EnrichmentServiceUnavailable | CatalogItemNotFound>,
         categories: (items: CatalogItem[]) => Effect.Effect<CatalogCategory[]>
     }
@@ -71,28 +103,30 @@ export class CatalogService extends Context.Service<
             },
             search: (items, query) => {
                 return Effect.gen(function*() {
-
-                    yield* delay(1000)
-
                     const filtered = pipe(
                         items,
                         Array.filter(item => !query.filter || item.category === query.filter)
                     )
 
                     const ranked = query.query ? rank(filtered, query.query) : filtered
-
-                    if (query.sort === "price") {
-                        return pipe(
+                    const ordered = query.sort === "price"
+                        ? pipe(
                             ranked,
-                            Array.sort(Order.mapInput(Order.Number, (item: CatalogItem) => item.price))
+                            Array.sort(Order.mapInput(Order.Number, (item: CatalogItem) => item.price)),
                         )
-                    }
+                        : ranked
 
-                    return ranked
+                    return yield* Effect.forEach(ordered, liveQuote, { concurrency: "unbounded" })
                 })
             },
             enrichById: (items, id) => {
                 return Effect.gen(function*() {
+                    const item = items.find(curr => curr.id === id)
+
+                    if (!item) {
+                        return yield* new CatalogItemNotFound({ details: `Catalog item with ${id} not found.` })
+                    }
+
                     const random = yield* Random.next
                     const success = yield* maybeSuccessWithDelay(500)
 
@@ -102,18 +136,7 @@ export class CatalogService extends Context.Service<
                         })
                     }
 
-                    const item = items.find(curr => curr.id === id)
-
-                    if (!item) {
-                        return yield* new CatalogItemNotFound({ details: `Catalog item with ${id} not found.` })
-                    }
-
-                    return new CatalogItem({
-                        // oxlint-disable-next-line typescript/no-misused-spread -- We reconstructing the prototype
-                        ...item,
-                        discountedPrice: item.price * random,
-                        inStock: random > 0.5
-                    })
+                    return quoteFromRandom(item, random)
                 })
             },
             categories: (items) => {
@@ -122,8 +145,7 @@ export class CatalogService extends Context.Service<
                         items,
                         Array.map(item => item.category),
                         Array.dedupe,
-                        Array.map((item, index) => new CatalogCategory({
-                            id: index + 1,
+                        Array.map((item) => new CatalogCategory({
                             name: item
                         }))
                     )

@@ -4,17 +4,17 @@
     "type": "module",
     "module": "./src/index.ts",
     "scripts": {
-        "dev": "tsx watch src/index.ts"
+        "dev": "tsx watch src/index.ts",
+        "start": "tsx src/index.ts",
+        "test": "bun test"
     },
     "dependencies": {
         "@effect/platform-node": "catalog:",
         "catalog-core": "workspace:*",
-        "effect": "catalog:",
-        "express": "catalog:"
+        "effect": "catalog:"
     },
     "devDependencies": {
         "@types/bun": "catalog:",
-        "@types/express": "catalog:",
         "@types/node": "catalog:",
         "tsx": "^4.19.2"
     },

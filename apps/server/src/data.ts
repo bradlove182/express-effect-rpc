@@ -1,46 +1,8 @@
 import { CatalogItem } from "catalog-core"
+import { Schema } from "effect"
+import catalogJson from "./catalog.json" with { type: "json" }
 
-const placeholderImage = (seed: string) => `https://picsum.photos/seed/${seed}/400/300`
-
-export const items = [
-    new CatalogItem({ id: 1, name: "Sourdough Loaf", price: 7, category: "bakery", imageUrl: placeholderImage("sourdough") }),
-    new CatalogItem({ id: 2, name: "Croissant", price: 4, category: "bakery", imageUrl: placeholderImage("croissant") }),
-    new CatalogItem({ id: 3, name: "Bagel", price: 3, category: "bakery", imageUrl: placeholderImage("bagel") }),
-    new CatalogItem({ id: 4, name: "Baguette", price: 5, category: "bakery", imageUrl: placeholderImage("baguette") }),
-    new CatalogItem({ id: 5, name: "Avocado", price: 2, category: "produce", imageUrl: placeholderImage("avocado") }),
-    new CatalogItem({ id: 6, name: "Heirloom Tomato", price: 4, category: "produce", imageUrl: placeholderImage("tomato") }),
-    new CatalogItem({ id: 7, name: "Strawberries", price: 6, category: "produce", imageUrl: placeholderImage("strawberries") }),
-    new CatalogItem({ id: 8, name: "Blueberries", price: 5, category: "produce", imageUrl: placeholderImage("blueberries") }),
-    new CatalogItem({ id: 9, name: "Spinach", price: 3, category: "produce", imageUrl: placeholderImage("spinach") }),
-    new CatalogItem({ id: 10, name: "Sweet Corn", price: 2, category: "produce", imageUrl: placeholderImage("corn") }),
-    new CatalogItem({ id: 11, name: "Cheddar", price: 8, category: "dairy", imageUrl: placeholderImage("cheddar") }),
-    new CatalogItem({ id: 12, name: "Mozzarella", price: 7, category: "dairy", imageUrl: placeholderImage("mozzarella") }),
-    new CatalogItem({ id: 13, name: "Greek Yogurt", price: 5, category: "dairy", imageUrl: placeholderImage("yogurt") }),
-    new CatalogItem({ id: 14, name: "Butter", price: 6, category: "dairy", imageUrl: placeholderImage("butter") }),
-    new CatalogItem({ id: 15, name: "Eggs", price: 4, category: "dairy", imageUrl: placeholderImage("eggs") }),
-    new CatalogItem({ id: 16, name: "Salmon Fillet", price: 18, category: "seafood", imageUrl: placeholderImage("salmon") }),
-    new CatalogItem({ id: 17, name: "Shrimp", price: 14, category: "seafood", imageUrl: placeholderImage("shrimp") }),
-    new CatalogItem({ id: 18, name: "Tuna Steak", price: 16, category: "seafood", imageUrl: placeholderImage("tuna") }),
-    new CatalogItem({ id: 19, name: "Chicken Breast", price: 12, category: "meat", imageUrl: placeholderImage("chicken") }),
-    new CatalogItem({ id: 20, name: "Ribeye Steak", price: 28, category: "meat", imageUrl: placeholderImage("ribeye") }),
-    new CatalogItem({ id: 21, name: "Bacon", price: 9, category: "meat", imageUrl: placeholderImage("bacon") }),
-    new CatalogItem({ id: 22, name: "Italian Sausage", price: 10, category: "meat", imageUrl: placeholderImage("sausage") }),
-    new CatalogItem({ id: 23, name: "Spaghetti", price: 3, category: "pantry", imageUrl: placeholderImage("spaghetti") }),
-    new CatalogItem({ id: 24, name: "Olive Oil", price: 11, category: "pantry", imageUrl: placeholderImage("olive-oil") }),
-    new CatalogItem({ id: 25, name: "Basmati Rice", price: 6, category: "pantry", imageUrl: placeholderImage("rice") }),
-    new CatalogItem({ id: 26, name: "Black Beans", price: 2, category: "pantry", imageUrl: placeholderImage("black-beans") }),
-    new CatalogItem({ id: 27, name: "Tomato Sauce", price: 4, category: "pantry", imageUrl: placeholderImage("tomato-sauce") }),
-    new CatalogItem({ id: 28, name: "Honey", price: 8, category: "pantry", imageUrl: placeholderImage("honey") }),
-    new CatalogItem({ id: 29, name: "Dark Chocolate", price: 5, category: "snacks", imageUrl: placeholderImage("chocolate") }),
-    new CatalogItem({ id: 30, name: "Potato Chips", price: 3, category: "snacks", imageUrl: placeholderImage("chips") }),
-    new CatalogItem({ id: 31, name: "Trail Mix", price: 7, category: "snacks", imageUrl: placeholderImage("trail-mix") }),
-    new CatalogItem({ id: 32, name: "Granola Bar", price: 2, category: "snacks", imageUrl: placeholderImage("granola-bar") }),
-    new CatalogItem({ id: 33, name: "Espresso Beans", price: 13, category: "beverages", imageUrl: placeholderImage("espresso") }),
-    new CatalogItem({ id: 34, name: "Green Tea", price: 6, category: "beverages", imageUrl: placeholderImage("green-tea") }),
-    new CatalogItem({ id: 35, name: "Orange Juice", price: 5, category: "beverages", imageUrl: placeholderImage("orange-juice") }),
-    new CatalogItem({ id: 36, name: "Sparkling Water", price: 2, category: "beverages", imageUrl: placeholderImage("sparkling-water") }),
-    new CatalogItem({ id: 37, name: "Vanilla Ice Cream", price: 7, category: "frozen", imageUrl: placeholderImage("ice-cream") }),
-    new CatalogItem({ id: 38, name: "Frozen Peas", price: 3, category: "frozen", imageUrl: placeholderImage("peas") }),
-    new CatalogItem({ id: 39, name: "Pizza Margherita", price: 12, category: "frozen", imageUrl: placeholderImage("pizza") }),
-    new CatalogItem({ id: 40, name: "Miso Soup Mix", price: 4, category: "pantry", imageUrl: placeholderImage("miso") }),
-]
+// oxlint-disable-next-line effecttsgo/schema-sync
+export const items = Schema.decodeSync(Schema.Array(CatalogItem))(
+    catalogJson.map((item) => new CatalogItem(item)),
+).slice()

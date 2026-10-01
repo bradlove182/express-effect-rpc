@@ -1,6 +1,5 @@
-import { Array, Duration, Effect, Fiber, pipe, Queue, Record, Stream, Struct } from "effect"
+import { Array, Duration, Effect, Fiber, pipe, Queue, Stream, Struct } from "effect"
 import { apiClient, CatalogQuery } from "catalog-core"
-import { SvelteURLSearchParams } from "svelte/reactivity"
 import { onDestroy, tick } from "svelte"
 import { goto } from "$app/navigation"
 import { page } from "$app/state"
@@ -42,25 +41,41 @@ export function useSearchParams<T extends CatalogQuery>(getter: () => T) {
         )
     })
 
-    const params = new SvelteURLSearchParams(state)
+    let hasSynced = false
 
     $effect(() => {
-        if (state && Record.values(state).some(value => value !== undefined)) {
-            Struct.keys(state).forEach(key => params.set(key, state[key]))
-            void tick().then(() => {
-                // Not a hand-written route string for `resolve()` to check —
-                // this only ever echoes back the current page's own
-                // (already-resolved) pathname with an updated query string.
-                void goto(
-                    `${page.url.pathname}?${params.toString()}`,
-                    {
-                        state: page.state,
-                        shallow: true,
-                        replace: true
-                    }
-                )
-            })
+        const params = new URLSearchParams()
+        for (const key of Struct.keys(state)) {
+            params.set(key, state[key])
         }
+
+        const search = params.toString()
+
+        // The first run is an empty query, before the URL is read back into state.
+        if (!hasSynced) {
+            hasSynced = true
+            if (search === "") {
+                return
+            }
+        }
+
+        if (search === page.url.searchParams.toString()) {
+            return
+        }
+
+        void tick().then(() => {
+            // Not a hand-written route string for `resolve()` to check —
+            // this only ever echoes back the current page's own
+            // (already-resolved) pathname with an updated query string.
+            void goto(
+                search.length > 0 ? `${page.url.pathname}?${search}` : page.url.pathname,
+                {
+                    state: page.state,
+                    shallow: true,
+                    replace: true
+                }
+            )
+        })
     })
 
     const getParam = (key: keyof T): T[keyof T] | undefined => {

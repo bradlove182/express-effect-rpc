@@ -1,5 +1,5 @@
 import { HttpApi, HttpApiClient, HttpApiEndpoint, HttpApiError, HttpApiGroup, OpenApi } from "effect/unstable/httpapi"
-import { CatalogItem, CatalogItemNotFound, HealthResponse, EnrichmentServiceUnavailable, CatalogQuery, CatalogCategory } from "./"
+import { CatalogItem, CatalogItemNotFound, HealthResponse, EnrichmentServiceUnavailable, CatalogQuery, CatalogCategory, CatalogSearchResult } from "./"
 import { Schema } from "effect";
 import { SERVER_PORT } from "./dev"
 import { FetchHttpClient } from "effect/unstable/http";
@@ -12,7 +12,7 @@ export class CatalogApiGroup extends HttpApiGroup.make("packages/core/api/Catalo
     }),
       HttpApiEndpoint.get("list", "/catalog", {
         query: Schema.optionalKey(CatalogQuery),
-        success: Schema.Array(CatalogItem),
+        success: Schema.Array(CatalogSearchResult),
         error: HttpApiError.InternalServerErrorNoContent
     }),
     HttpApiEndpoint.get("getById", "/catalog/:id", {
